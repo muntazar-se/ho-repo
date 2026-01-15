@@ -1,7 +1,7 @@
 {
-  "name": "daily-sales-management-backend",
+  "name": "hasad-omnnea-daily-sales-dashboard-backend",
   "version": "1.0.0",
-  "description": "Backend API for Daily Sales Management System",
+  "description": "Backend API for Hasad Omnnea Daily Sales Dashboard",
   "main": "server.js",
   "type": "module",
   "scripts": {

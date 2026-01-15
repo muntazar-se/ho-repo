@@ -75,7 +75,7 @@ function App() {
             }
           />
 <Route
-  path="/manager/daily-sales"
+  path="/manager/daily-sales-history"
   element={
     <PrivateRoute allowedRoles={[USER_ROLES.MANAGER, USER_ROLES.ADMIN]}>
       <Layout>

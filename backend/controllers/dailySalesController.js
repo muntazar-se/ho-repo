@@ -142,7 +142,7 @@ const updateCompanyCash = async (dailySales) => {
 };
 
 // @desc    Create daily sales entry
-// @route   POST /api/daily-sales
+// @route   POST /api/daily-sales-history
 // @access  Private/DataEntry, Admin
 export const createDailySales = async (req, res) => {
   try {
@@ -205,7 +205,7 @@ export const createDailySales = async (req, res) => {
 };
 
 // @desc    Get all daily sales
-// @route   GET /api/daily-sales
+// @route   GET /api/daily-sales-history
 // @access  Private
 export const getDailySales = async (req, res) => {
   try {
@@ -253,7 +253,7 @@ export const getDailySales = async (req, res) => {
 };
 
 // @desc    Get daily sales by ID
-// @route   GET /api/daily-sales/:id
+// @route   GET /api/daily-sales-history/:id
 // @access  Private
 export const getDailySalesById = async (req, res) => {
   try {
@@ -272,7 +272,7 @@ export const getDailySalesById = async (req, res) => {
 };
 
 // @desc    Update daily sales
-// @route   PUT /api/daily-sales/:id
+// @route   PUT /api/daily-sales-history/:id
 // @access  Private/DataEntry, Admin
 export const updateDailySales = async (req, res) => {
   try {
@@ -325,7 +325,7 @@ export const updateDailySales = async (req, res) => {
 };
 
 // @desc    Delete daily sales
-// @route   DELETE /api/daily-sales/:id
+// @route   DELETE /api/daily-sales-history/:id
 // @access  Private/Admin
 export const deleteDailySales = async (req, res) => {
   try {
@@ -347,7 +347,7 @@ export const deleteDailySales = async (req, res) => {
 };
 
 // @desc    Get daily sales by date
-// @route   GET /api/daily-sales/date/:date
+// @route   GET /api/daily-sales-history/date/:date
 // @access  Private
 export const getDailySalesByDate = async (req, res) => {
   try {
@@ -370,7 +370,7 @@ export const getDailySalesByDate = async (req, res) => {
 };
 
 // @desc    Get daily sales by month
-// @route   GET /api/daily-sales/month/:year/:month
+// @route   GET /api/daily-sales-history/month/:year/:month
 // @access  Private
 export const getDailySalesByMonth = async (req, res) => {
   try {

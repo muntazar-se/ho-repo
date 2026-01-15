@@ -42,12 +42,12 @@ app.use(requestLogger);
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/daily-sales', dailySalesRoutes);
+app.use('/api/daily-sales-history', dailySalesRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/company-cash', companyCashRoutes);
 
 // Temporary mock endpoints (for UI testing)
-app.get('/api/mock/daily-sales', (req, res) => {
+app.get('/api/mock/daily-sales-history', (req, res) => {
   const products = ['chips', 'flavors', 'pellets', 'proteinChips', 'proteinBars'];
   const weights = [0.35, 0.2, 0.18, 0.17, 0.1];
 

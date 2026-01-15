@@ -22,12 +22,12 @@ export default function Sidebar() {
 
   const managerLinks = [
     { path: '/manager/dashboard', label: 'Dashboard', icon: '📊' },
-    { path: '/manager/daily-sales', label: 'Daily Sales', icon: '📅' },
-    { path: '/manager/monthly-sales', label: 'Monthly Sales', icon: '📊' },
-    { path: '/manager/cash-position', label: 'Cash Position', icon: '💰' },
-    { path: '/manager/products', label: 'Product Performance', icon: '📦' },
-    { path: '/manager/risk-analysis', label: 'Risk Analysis', icon: '⚠️' },
-    { path: '/manager/annual-summary', label: 'Annual Summary', icon: '📈' },
+    { path: '/manager/daily-sales-history', label: 'Daily Sales History', icon: '📅' },
+    // { path: '/manager/monthly-sales', label: 'Monthly Sales', icon: '📊' },
+    // { path: '/manager/cash-position', label: 'Cash Position', icon: '💰' },
+    // { path: '/manager/products', label: 'Product Performance', icon: '📦' },
+    // { path: '/manager/risk-analysis', label: 'Risk Analysis', icon: '⚠️' },
+    // { path: '/manager/annual-summary', label: 'Annual Summary', icon: '📈' },
   ];
 
   const dataEntryLinks = [

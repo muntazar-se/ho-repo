@@ -52,7 +52,7 @@ npm run dev
 1. Create a `.env` file in the `frontend` folder with:
 ```
 VITE_API_URL=http://localhost:5001/api
-VITE_APP_NAME=Sales Management System
+VITE_APP_NAME=Hasad Omnnea Daily Sales Dashboard
 ```
 
 2. Run frontend:

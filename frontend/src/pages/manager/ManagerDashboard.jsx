@@ -228,7 +228,11 @@ export default function ManagerDashboard() {
     ? Object.values(todayByProduct).reduce((sum, v) => sum + (Number(v?.expenses) || 0), 0)
     : 0;
   const currentDayExpenses = todayByProduct ? currentDayExpensesFromProducts : currentDayExpensesFromDashboard;
-  const totalCurrentCash = currentDayRevenue - currentDayExpenses;
+  const totalCurrentCash = todaySales
+    ? (Number(todaySales.totalRevenue) || 0) - (Number(todaySales.totalExpenses) || 0)
+    : activeDay === 'today' && dayHasNoData
+      ? (Number(dashboardData.ytd?.totalRevenue) || 0) - (Number(dashboardData.ytd?.totalExpenses) || 0)
+      : 0;
 
   const mtdTotalCurrentCash = mtdSales
     ? (Number(mtdSales.totalRevenue) || 0) - (Number(mtdSales.totalExpenses) || 0)
@@ -278,22 +282,31 @@ export default function ManagerDashboard() {
           </h2>
 
           {dayHasNoData ? (
-            <div className="text-center text-gray-500">
-              {activeDay === 'yesterday'
-                ? "Yesterday's data not provided yet"
-                : "Today's data not provided yet"}
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+                <StatCard
+                  title="Total Current Cash"
+                  value={totalCurrentCash}
+                  icon={() => <span>💰</span>}
+                />
+              </div>
+              <div className="text-center text-gray-500">
+                {activeDay === 'yesterday'
+                  ? "Yesterday's data not provided yet"
+                  : "Today's data not provided yet"}
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <StatCard
                 title="Total Current Cash"
                 value={totalCurrentCash}
-                icon={() => <span>�</span>}
+                icon={() => <span>💰</span>}
               />
               <StatCard
                 title="Invoices"
                 value={todaySales ? todaySales.totalInvoices : 0}
-                icon={() => <span>�</span>}
+                icon={() => <span>📄</span>}
               />
               <StatCard
                 title="Expenses"

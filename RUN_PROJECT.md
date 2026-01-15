@@ -65,5 +65,5 @@ Both backend and frontend servers are now running in the background.
 
 To stop the servers, press `Ctrl+C` in the terminal windows where they're running, or close the terminal windows.
 
-## ✨ Enjoy using the Sales Management System!
+## ✨ Enjoy using the Hasad Omnnea Daily Sales Dashboard!
 

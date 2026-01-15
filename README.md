@@ -1,4 +1,4 @@
-# MERN Stack Daily Sales Management System
+# Hasad Omnnea Daily Sales Dashboard
 
 A complete MERN stack web application for daily sales management with role-based access control. The system tracks daily sales across multiple product lines with automatic calculations for cash flow, monthly reports, and risk analysis.
 
@@ -91,7 +91,7 @@ npm install
 3. Create a `.env` file in the frontend directory:
 ```env
 VITE_API_URL=http://localhost:5001/api
-VITE_APP_NAME=Sales Management System
+VITE_APP_NAME=Hasad Omnnea Daily Sales Dashboard
 ```
 
 4. Start the development server:
@@ -133,13 +133,13 @@ After running the seed script, you can login with:
 - `PATCH /api/users/:id/toggle-active` - Toggle user active status
 
 ### Daily Sales
-- `POST /api/daily-sales` - Create daily sales entry
-- `GET /api/daily-sales` - Get all daily sales (with filtering)
-- `GET /api/daily-sales/:id` - Get specific entry
-- `PUT /api/daily-sales/:id` - Update entry
-- `DELETE /api/daily-sales/:id` - Delete entry (admin only)
-- `GET /api/daily-sales/date/:date` - Get sales for specific date
-- `GET /api/daily-sales/month/:year/:month` - Get sales for month
+- `POST /api/daily-sales-history` - Create daily sales entry
+- `GET /api/daily-sales-history` - Get all daily sales (with filtering)
+- `GET /api/daily-sales-history/:id` - Get specific entry
+- `PUT /api/daily-sales-history/:id` - Update entry
+- `DELETE /api/daily-sales-history/:id` - Delete entry (admin only)
+- `GET /api/daily-sales-history/date/:date` - Get sales for specific date
+- `GET /api/daily-sales-history/month/:year/:month` - Get sales for month
 
 ### Reports (Manager, Admin)
 - `GET /api/reports/dashboard` - Get dashboard summary
