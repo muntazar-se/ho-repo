@@ -106,12 +106,14 @@ const handleSave = async (values) => {
         loading={loading}
         pagination={{ pageSize: 10 }}
       />
-      <Modal
-        title={editModal.user ? 'Edit User' : 'Create User'}
-        open={editModal.visible}
-        onCancel={() => setEditModal({ visible: false, user: null })}
-        footer={null}
-      >
+<Modal
+  key={editModal.user?._id || 'new'}
+  title={editModal.user ? 'Edit User' : 'Create User'}
+  open={editModal.visible}
+  onCancel={() => setEditModal({ visible: false, user: null })}
+  afterClose={() => form.resetFields()}
+  footer={null}
+>
         <Form
           layout="vertical"
           initialValues={editModal.user || {}}
