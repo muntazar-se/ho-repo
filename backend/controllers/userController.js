@@ -32,52 +32,29 @@ export const getUserById = async (req, res) => {
 // @desc    Update user
 // @route   PUT /api/users/:id
 // @access  Private/Admin
+// In updateUser function
 export const updateUser = async (req, res) => {
   try {
-    const { username, email, role, fullName, isActive } = req.body;
-
+    const { username, email, fullName, role, isActive, password } = req.body;
     const user = await User.findById(req.params.id);
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Check if email/username already exists (excluding current user)
-    if (email && email !== user.email) {
-      const emailExists = await User.findOne({ email, _id: { $ne: req.params.id } });
-      if (emailExists) {
-        return res.status(400).json({ message: 'Email already exists' });
-      }
-    }
-
-    if (username && username !== user.username) {
-      const usernameExists = await User.findOne({
-        username,
-        _id: { $ne: req.params.id },
-      });
-      if (usernameExists) {
-        return res.status(400).json({ message: 'Username already exists' });
-      }
-    }
-
     user.username = username || user.username;
     user.email = email || user.email;
-    user.role = role || user.role;
     user.fullName = fullName || user.fullName;
-    if (isActive !== undefined) {
-      user.isActive = isActive;
+    user.role = role || user.role;
+    user.isActive = isActive !== undefined ? isActive : user.isActive;
+
+    // Only update password if provided
+    if (password) {
+      user.password = password; // Will be hashed by pre-save hook
     }
 
     const updatedUser = await user.save();
-
-    res.json({
-      _id: updatedUser._id,
-      username: updatedUser.username,
-      email: updatedUser.email,
-      role: updatedUser.role,
-      fullName: updatedUser.fullName,
-      isActive: updatedUser.isActive,
-    });
+    res.json(updatedUser);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

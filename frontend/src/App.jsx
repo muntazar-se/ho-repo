@@ -5,6 +5,8 @@ import PrivateRoute from './components/common/PrivateRoute.jsx';
 import Navbar from './components/common/Navbar.jsx';
 import Sidebar from './components/common/Sidebar.jsx';
 import { USER_ROLES } from './utils/constants.js';
+import UserManagement from './pages/admin/UserManagement.jsx';
+
 
 // Auth pages
 import Login from './pages/auth/Login.jsx';
@@ -74,6 +76,16 @@ function App() {
               </PrivateRoute>
             }
           />
+          <Route
+  path="/admin/users"
+  element={
+    <PrivateRoute allowedRoles={[USER_ROLES.ADMIN]}>
+      <Layout>
+        <UserManagement />
+      </Layout>
+    </PrivateRoute>
+  }
+/>
 <Route
   path="/manager/daily-sales-history"
   element={
