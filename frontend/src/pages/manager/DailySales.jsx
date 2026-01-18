@@ -9,7 +9,6 @@ const { RangePicker } = DatePicker;
 export default function DailySales() {
   const [loading, setLoading] = useState(true);
   const [salesData, setSalesData] = useState([]);
-  const [allSalesData, setAllSalesData] = useState([]);
   const [dateRange, setDateRange] = useState([
     dayjs().startOf('month'),
     dayjs().endOf('day'),
@@ -19,23 +18,25 @@ export default function DailySales() {
     fetchDailySales();
   }, []);
 
+  useEffect(() => {
+    fetchDailySales();
+  }, [dateRange]);
+
   const fetchDailySales = async () => {
     try {
       setLoading(true);
-      const { items } = await dailySalesService.getMock();
-      const sorted = (items || []).slice().sort((a, b) => new Date(a.date) - new Date(b.date));
-      setAllSalesData(sorted);
-
       const start = dateRange?.[0]?.startOf('day');
       const end = dateRange?.[1]?.endOf('day');
-      const filtered = sorted.filter((row) => {
-        const d = dayjs(row.date);
-        if (start && d.isBefore(start)) return false;
-        if (end && d.isAfter(end)) return false;
-        return true;
+
+      const { dailySales } = await dailySalesService.getAll({
+        startDate: start?.toISOString(),
+        endDate: end?.toISOString(),
+        page: 1,
+        limit: 5000,
       });
 
-      setSalesData(filtered);
+      const rows = (dailySales || []).slice().sort((a, b) => new Date(a.date) - new Date(b.date));
+      setSalesData(rows);
     } catch (error) {
       console.error('Error fetching daily sales:', error);
       message.error('Failed to load daily sales data');
@@ -47,15 +48,6 @@ export default function DailySales() {
   const handleDateChange = (dates) => {
     if (dates && dates[0] && dates[1]) {
       setDateRange(dates);
-      const start = dates?.[0]?.startOf('day');
-      const end = dates?.[1]?.endOf('day');
-      const filtered = (allSalesData || []).filter((row) => {
-        const d = dayjs(row.date);
-        if (start && d.isBefore(start)) return false;
-        if (end && d.isAfter(end)) return false;
-        return true;
-      });
-      setSalesData(filtered);
     }
   };
 
@@ -69,21 +61,21 @@ export default function DailySales() {
     },
     {
       title: 'Total Sales',
-      dataIndex: 'totalSales',
-      key: 'totalSales',
+      dataIndex: 'totalCashRevenue',
+      key: 'totalCashRevenue',
       render: (value) => formatCurrency(value || 0),
-      sorter: (a, b) => (a.totalSales || 0) - (b.totalSales || 0),
+      sorter: (a, b) => (a.totalCashRevenue || 0) - (b.totalCashRevenue || 0),
     },
     {
       title: 'Number of Invoices',
-      dataIndex: 'numberOfInvoices',
-      key: 'numberOfInvoices',
-      sorter: (a, b) => (a.numberOfInvoices || 0) - (b.numberOfInvoices || 0),
+      dataIndex: 'totalInvoices',
+      key: 'totalInvoices',
+      sorter: (a, b) => (a.totalInvoices || 0) - (b.totalInvoices || 0),
     },
   ];
 
-  const totalSales = salesData.reduce((sum, item) => sum + (item.totalSales || 0), 0);
-  const totalInvoices = salesData.reduce((sum, item) => sum + (item.numberOfInvoices || 0), 0);
+  const totalSales = salesData.reduce((sum, item) => sum + (item.totalCashRevenue || 0), 0);
+  const totalInvoices = salesData.reduce((sum, item) => sum + (item.totalInvoices || 0), 0);
 
   return (
     <div className="p-6">

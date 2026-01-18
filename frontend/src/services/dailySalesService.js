@@ -6,11 +6,6 @@ export const dailySalesService = {
     return response.data;
   },
 
-  getMock: async () => {
-    const response = await api.get('/mock/daily-sales-history');
-    return response.data;
-  },
-
   getAll: async (params = {}) => {
     const response = await api.get('/daily-sales-history', { params });
     return response.data;

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { dailySalesService } from '../../services/dailySalesService';
+import { reportsService } from '../../services/reportsService.js';
 import { formatCurrency } from '../../utils/formatters';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import toast from 'react-hot-toast';
@@ -19,26 +19,33 @@ export default function MonthlyReport() {
   const fetchReportData = async (year, month) => {
     try {
       setLoading(true);
-      const { items } = await dailySalesService.getMock();
-      const monthlyItems = (items || []).filter((row) => row.year === year && row.month === month);
-
-      const totalRevenue = monthlyItems.reduce((sum, r) => sum + (r.totalSales || 0), 0);
-      const totalInvoices = monthlyItems.reduce((sum, r) => sum + (r.numberOfInvoices || 0), 0);
-
-      const dailyBreakdown = monthlyItems
+      const data = await reportsService.getMonthlyReport(year, month);
+      const summary = data?.summary || null;
+      const dailyBreakdown = (data?.dailyBreakdown || [])
         .slice()
         .sort((a, b) => new Date(a.date) - new Date(b.date))
         .map((r) => ({
           date: r.date,
-          revenue: r.totalSales || 0,
-          invoices: r.numberOfInvoices || 0,
+          revenue: r.totalCashRevenue || 0,
+          invoices: r.totalInvoices || 0,
         }));
 
+      const products = summary?.products || {};
+
       setReportData({
-        totalRevenue,
-        totalInvoices,
-        totalCosts: 0,
-        products: {},
+        totalRevenue: summary?.totalMonthlyRevenue || 0,
+        totalInvoices: summary?.totalMonthlyInvoices || 0,
+        totalCosts: (summary?.totalDirectCosts || 0) + (summary?.totalExpenses || 0),
+        products: Object.fromEntries(
+          Object.entries(products).map(([key, val]) => [
+            key,
+            {
+              invoices: val?.totalInvoices || 0,
+              revenue: val?.totalRevenue || 0,
+              cost: 0,
+            },
+          ])
+        ),
         dailyBreakdown,
       });
     } catch (error) {

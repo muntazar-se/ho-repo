@@ -146,7 +146,12 @@ const updateCompanyCash = async (dailySales) => {
 // @access  Private/DataEntry, Admin
 export const createDailySales = async (req, res) => {
   try {
-    const date = new Date(req.body.date);
+    const rawDate = req.body.date;
+    const date =
+      typeof rawDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(rawDate)
+        ? new Date(`${rawDate}T00:00:00`)
+        : new Date(rawDate);
+    date.setHours(0, 0, 0, 0);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
@@ -351,10 +356,16 @@ export const deleteDailySales = async (req, res) => {
 // @access  Private
 export const getDailySalesByDate = async (req, res) => {
   try {
-    const date = new Date(req.params.date);
-    date.setHours(0, 0, 0, 0);
+    const rawDate = req.params.date;
+    const start =
+      typeof rawDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(rawDate)
+        ? new Date(`${rawDate}T00:00:00`)
+        : new Date(rawDate);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 1);
 
-    const dailySales = await DailySales.findOne({ date }).populate(
+    const dailySales = await DailySales.findOne({ date: { $gte: start, $lt: end } }).populate(
       'enteredBy',
       'username fullName'
     );

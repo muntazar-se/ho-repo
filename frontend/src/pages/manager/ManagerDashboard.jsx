@@ -11,6 +11,8 @@ export default function ManagerDashboard() {
   const [todaySales, setTodaySales] = useState(null);
   const [mtdSales, setMtdSales] = useState(null);
   const [ytdSales, setYtdSales] = useState(null);
+  const [allTimeSales, setAllTimeSales] = useState(null);
+  const [plByMonth, setPlByMonth] = useState([]);
   const [todayByProduct, setTodayByProduct] = useState(null);
   const [activeDay, setActiveDay] = useState('today');
   const [dayHasNoData, setDayHasNoData] = useState(false);
@@ -47,8 +49,19 @@ export default function ManagerDashboard() {
       const selectedDate = activeDay === 'yesterday' ? addDays(base, -1) : base;
       const dateKey = toDateKey(selectedDate);
 
+      const monthStart = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+      monthStart.setHours(0, 0, 0, 0);
+
+      const yearStart = new Date(selectedDate.getFullYear(), 0, 1);
+      yearStart.setHours(0, 0, 0, 0);
+
+      const allTimeStart = new Date(1970, 0, 1);
+      allTimeStart.setHours(0, 0, 0, 0);
+
+      const endOfSelectedDay = new Date(selectedDate);
+      endOfSelectedDay.setHours(23, 59, 59, 999);
+
       let dayRow = null;
-      let usedMock = false;
       try {
         dayRow = await dailySalesService.getByDate(dateKey);
       } catch (e) {
@@ -57,104 +70,21 @@ export default function ManagerDashboard() {
       }
 
       if (!dayRow) {
-        try {
-          const { items } = await dailySalesService.getMock();
-          const normalizedItems = (items || []).filter((r) => r?.date);
-          dayRow = normalizedItems.find((r) => (r?.date || '').slice(0, 10) === dateKey) || null;
-          usedMock = Boolean(dayRow);
-
-          if (usedMock) {
-            const mockExpenses = dayRow?.products
-              ? Object.values(dayRow.products).reduce((sum, v) => sum + (Number(v?.expenses) || 0), 0)
-              : 0;
-
-            setTodaySales({
-              totalRevenue: dayRow?.totalSales || 0,
-              totalInvoices: dayRow?.numberOfInvoices || 0,
-              totalCosts: 0,
-              totalExpenses: mockExpenses,
-            });
-
-            setTodayByProduct(dayRow?.products || null);
-
-            const monthStart = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
-            monthStart.setHours(0, 0, 0, 0);
-
-            const yearStart = new Date(selectedDate.getFullYear(), 0, 1);
-            yearStart.setHours(0, 0, 0, 0);
-
-            const endOfSelectedDay = new Date(selectedDate);
-            endOfSelectedDay.setHours(23, 59, 59, 999);
-
-            const mtdRows = (normalizedItems || []).filter((r) => {
-              const d = new Date(r?.date);
-              if (Number.isNaN(d.getTime())) return false;
-              return d >= monthStart && d <= endOfSelectedDay;
-            });
-
-            setMtdSales({
-              totalRevenue: mtdRows.reduce((sum, r) => sum + (r.totalSales || 0), 0),
-              totalInvoices: mtdRows.reduce((sum, r) => sum + (r.numberOfInvoices || 0), 0),
-              totalCosts: 0,
-              totalExpenses: mtdRows.reduce((sum, r) => {
-                const exp = r?.products
-                  ? Object.values(r.products).reduce((s, v) => s + (Number(v?.expenses) || 0), 0)
-                  : 0;
-                return sum + exp;
-              }, 0),
-            });
-
-            const ytdRows = (normalizedItems || []).filter((r) => {
-              const d = new Date(r?.date);
-              if (Number.isNaN(d.getTime())) return false;
-              return d >= yearStart && d <= endOfSelectedDay;
-            });
-
-            setYtdSales({
-              totalRevenue: ytdRows.reduce((sum, r) => sum + (r.totalSales || 0), 0),
-              totalInvoices: ytdRows.reduce((sum, r) => sum + (r.numberOfInvoices || 0), 0),
-              totalCosts: 0,
-              totalExpenses: ytdRows.reduce((sum, r) => {
-                const exp = r?.products
-                  ? Object.values(r.products).reduce((s, v) => s + (Number(v?.expenses) || 0), 0)
-                  : 0;
-                return sum + exp;
-              }, 0),
-            });
-
-            return;
-          }
-        } catch (e) {
-          // ignore and fall through
-        }
-      }
-
-      if (!dayRow) {
         setDayHasNoData(true);
         setTodaySales(null);
-        setMtdSales(null);
-        setYtdSales(null);
         setTodayByProduct(null);
-        return;
       }
 
-      setTodaySales({
-        totalRevenue: dayRow?.totalCashRevenue || 0,
-        totalInvoices: dayRow?.totalInvoices || 0,
-        totalCosts: dayRow?.totalDirectCosts || 0,
-        totalExpenses: dayRow?.totalExpenses || 0,
-      });
+      if (dayRow) {
+        setTodaySales({
+          totalRevenue: dayRow?.totalCashRevenue || 0,
+          totalInvoices: dayRow?.totalInvoices || 0,
+          totalCosts: dayRow?.totalDirectCosts || 0,
+          totalExpenses: dayRow?.totalExpenses || 0,
+        });
 
-      setTodayByProduct(dayRow?.products || null);
-
-      const monthStart = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
-      monthStart.setHours(0, 0, 0, 0);
-
-      const yearStart = new Date(selectedDate.getFullYear(), 0, 1);
-      yearStart.setHours(0, 0, 0, 0);
-
-      const endOfSelectedDay = new Date(selectedDate);
-      endOfSelectedDay.setHours(23, 59, 59, 999);
+        setTodayByProduct(dayRow?.products || null);
+      }
 
       const { dailySales: mtdRows = [] } = await dailySalesService.getAll({
         startDate: monthStart.toISOString(),
@@ -177,17 +107,58 @@ export default function ManagerDashboard() {
         limit: 10000,
       });
 
+      const { dailySales: allTimeRows = [] } = await dailySalesService.getAll({
+        startDate: allTimeStart.toISOString(),
+        endDate: endOfSelectedDay.toISOString(),
+        page: 1,
+        limit: 20000,
+      });
+
+      const monthKey = (d) => {
+        const x = new Date(d);
+        if (Number.isNaN(x.getTime())) return null;
+        const yyyy = x.getFullYear();
+        const mm = String(x.getMonth() + 1).padStart(2, '0');
+        return `${yyyy}-${mm}`;
+      };
+
+      const byMonthMap = (ytdRows || []).reduce((acc, r) => {
+        const key = monthKey(r?.date);
+        if (!key) return acc;
+        const revenue = Number(r?.totalCashRevenue) || 0;
+        const costs = Number(r?.totalDirectCosts) || 0;
+        const expenses = Number(r?.totalExpenses) || 0;
+        const profit = revenue - costs - expenses;
+        acc[key] = (acc[key] || 0) + profit;
+        return acc;
+      }, {});
+
+      setPlByMonth(
+        Object.entries(byMonthMap)
+          .map(([month, profit]) => ({ month, profit }))
+          .sort((a, b) => a.month.localeCompare(b.month))
+      );
+
       setYtdSales({
         totalRevenue: (ytdRows || []).reduce((sum, r) => sum + (r?.totalCashRevenue || 0), 0),
         totalInvoices: (ytdRows || []).reduce((sum, r) => sum + (r?.totalInvoices || 0), 0),
         totalCosts: (ytdRows || []).reduce((sum, r) => sum + (r?.totalDirectCosts || 0), 0),
         totalExpenses: (ytdRows || []).reduce((sum, r) => sum + (r?.totalExpenses || 0), 0),
       });
+
+      setAllTimeSales({
+        totalRevenue: (allTimeRows || []).reduce((sum, r) => sum + (r?.totalCashRevenue || 0), 0),
+        totalInvoices: (allTimeRows || []).reduce((sum, r) => sum + (r?.totalInvoices || 0), 0),
+        totalCosts: (allTimeRows || []).reduce((sum, r) => sum + (r?.totalDirectCosts || 0), 0),
+        totalExpenses: (allTimeRows || []).reduce((sum, r) => sum + (r?.totalExpenses || 0), 0),
+      });
     } catch (error) {
       console.error(error);
       setTodaySales(null);
       setMtdSales(null);
       setYtdSales(null);
+      setAllTimeSales(null);
+      setPlByMonth([]);
       setTodayByProduct(null);
       setDayHasNoData(false);
     }
@@ -222,17 +193,43 @@ export default function ManagerDashboard() {
   const todayKey = toDateKey(base);
   const yesterdayKey = toDateKey(addDays(base, -1));
 
-  const currentDayRevenue = todaySales ? Number(todaySales.totalRevenue) || 0 : 0;
-  const currentDayExpensesFromDashboard = todaySales ? Number(todaySales.totalExpenses) || 0 : 0;
+  const currentDayRevenue =
+    todaySales
+      ? Number(todaySales.totalRevenue) || 0
+      : activeDay === 'today' && !dayHasNoData
+        ? Number(dashboardData.today?.totalRevenue) || 0
+        : 0;
+
+  const currentDayExpensesFromDashboard =
+    todaySales
+      ? Number(todaySales.totalExpenses) || 0
+      : activeDay === 'today' && !dayHasNoData
+        ? Number(dashboardData.today?.totalExpenses) || 0
+        : 0;
   const currentDayExpensesFromProducts = todayByProduct
     ? Object.values(todayByProduct).reduce((sum, v) => sum + (Number(v?.expenses) || 0), 0)
     : 0;
   const currentDayExpenses = todayByProduct ? currentDayExpensesFromProducts : currentDayExpensesFromDashboard;
-  const totalCurrentCash = todaySales
-    ? (Number(todaySales.totalRevenue) || 0) - (Number(todaySales.totalExpenses) || 0)
-    : activeDay === 'today' && dayHasNoData
-      ? (Number(dashboardData.ytd?.totalRevenue) || 0) - (Number(dashboardData.ytd?.totalExpenses) || 0)
-      : 0;
+
+  const totalCurrentCash = allTimeSales
+    ? (Number(allTimeSales.totalRevenue) || 0) - (Number(allTimeSales.totalExpenses) || 0)
+    : currentDayRevenue - currentDayExpenses;
+
+  const todayTotalSales = currentDayRevenue;
+
+  const totalEstPLMonth =
+    mtdSales
+      ? (Number(mtdSales.totalRevenue) || 0) - (Number(mtdSales.totalCosts) || 0) - (Number(mtdSales.totalExpenses) || 0)
+      : activeDay === 'today' && !dayHasNoData
+        ? (Number(dashboardData.mtd?.totalRevenue) || 0) - (Number(dashboardData.mtd?.totalCosts) || 0) - (Number(dashboardData.mtd?.totalExpenses) || 0)
+        : 0;
+
+  const estPLByProduct = todayByProduct
+    ? Object.entries(todayByProduct).map(([product, vals]) => ({
+        product,
+        profit: (Number(vals?.cashRevenue) || 0) - (Number(vals?.expenses) || 0),
+      }))
+    : [];
 
   const mtdTotalCurrentCash = mtdSales
     ? (Number(mtdSales.totalRevenue) || 0) - (Number(mtdSales.totalExpenses) || 0)
@@ -284,11 +281,13 @@ export default function ManagerDashboard() {
           {dayHasNoData ? (
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
-                <StatCard
-                  title="Total Current Cash"
-                  value={totalCurrentCash}
-                  icon={() => <span>💰</span>}
-                />
+                {false && (
+                  <StatCard
+                    title="Total Current Cash"
+                    value={totalCurrentCash}
+                    icon={() => <span>💰</span>}
+                  />
+                )}
               </div>
               <div className="text-center text-gray-500">
                 {activeDay === 'yesterday'
@@ -298,21 +297,27 @@ export default function ManagerDashboard() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <StatCard
-                title="Total Current Cash"
-                value={totalCurrentCash}
-                icon={() => <span>💰</span>}
-              />
-              <StatCard
-                title="Invoices"
-                value={todaySales ? todaySales.totalInvoices : 0}
-                icon={() => <span>📄</span>}
-              />
-              <StatCard
-                title="Expenses"
-                value={currentDayExpenses}
-                icon={() => <span>📊</span>}
-              />
+              {false && (
+                <StatCard
+                  title="Total Current Cash"
+                  value={totalCurrentCash}
+                  icon={() => <span>💰</span>}
+                />
+              )}
+              {false && (
+                <>
+                  <StatCard
+                    title="Invoices"
+                    value={todaySales ? todaySales.totalInvoices : 0}
+                    icon={() => <span>📄</span>}
+                  />
+                  <StatCard
+                    title="Expenses"
+                    value={currentDayExpenses}
+                    icon={() => <span>📊</span>}
+                  />
+                </>
+              )}
             </div>
           )}
 
@@ -331,76 +336,174 @@ export default function ManagerDashboard() {
               </div>
             </div>
           )}
+
+          <div className="mt-6 pt-4 border-t">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="hidden md:block" />
+              <div className="hidden md:block" />
+              <div className="hidden md:block" />
+              <div className="md:col-start-4">
+                <StatCard
+                  title="Total Current Cash"
+                  value={totalCurrentCash}
+                  icon={() => <span>💰</span>}
+                />
+              </div>
+            </div>
+          </div>
+
+          {false && (
+            <div className="mt-6 pt-4 border-t">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <StatCard
+                  title="Total Current Cash"
+                  value={totalCurrentCash}
+                  icon={() => <span>💰</span>}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* To show the "Cash & Profit" section (Today's Total Sales / Total Est P/L/Month / Est P/L/Product / P/L by Month), change `false` to `true` below */}
+          {false && (
+            <div className="mt-6 pt-4 border-t">
+              <h3 className="text-lg font-semibold mb-3">Cash & Profit</h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <StatCard
+                  title="Today's Total Sales"
+                  value={todayTotalSales}
+                />
+
+                <StatCard
+                  title="Total Est P/L/Month"
+                  value={totalEstPLMonth}
+                />
+
+                <div className="hidden md:block" />
+
+                <div className="md:col-start-4">
+                  <StatCard
+                    title="Total Current Cash"
+                    value={totalCurrentCash}
+                    icon={() => <span>💰</span>}
+                  />
+                </div>
+              </div>
+
+              {estPLByProduct.length > 0 && (
+                <div className="mt-6">
+                  <h4 className="text-base font-semibold mb-3">Est P/L/Product</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                    {estPLByProduct.map(({ product, profit }) => (
+                      <StatCard
+                        key={product}
+                        title={product.replace(/([A-Z])/g, ' $1')}
+                        value={profit}
+                        format={(v) => (typeof v === 'number' ? v.toFixed(2) : v)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {plByMonth.length > 0 && (
+                <div className="mt-6">
+                  <h4 className="text-base font-semibold mb-3">P/L by Month</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {plByMonth.map((row) => (
+                      <StatCard
+                        key={row.month}
+                        title={row.month}
+                        value={row.profit}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
       {/* MTD & YTD */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4">Month-to-Date (MTD)</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <StatCard title="Total Current Cash" value={mtdTotalCurrentCash} />
-            <StatCard
-              title="Invoices"
-              value={
-                mtdSales
-                  ? mtdSales.totalInvoices
-                  : activeDay === 'today' && !dayHasNoData
-                    ? dashboardData.mtd.totalInvoices
-                    : 0
-              }
-            />
-            <StatCard
-              title="Costs"
-              value={
-                mtdSales
-                  ? mtdSales.totalCosts
-                  : activeDay === 'today' && !dayHasNoData
-                    ? dashboardData.mtd.totalCosts
-                    : 0
-              }
-            />
-            <StatCard
-              title="Expenses"
-              value={
-                mtdSales
-                  ? mtdSales.totalExpenses
-                  : activeDay === 'today' && !dayHasNoData
-                    ? dashboardData.mtd.totalExpenses
-                    : 0
-              }
-            />
+      {/* To show the MTD/YTD sections, change `false` to `true` below */}
+      {false && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-semibold mb-4">Month-to-Date (MTD)</h2>
+            <div className="grid grid-cols-2 gap-4">
+              <StatCard title="Total Current Cash" value={mtdTotalCurrentCash} />
+              {false && (
+                <StatCard
+                  title="Invoices"
+                  value={
+                    mtdSales
+                      ? mtdSales.totalInvoices
+                      : activeDay === 'today' && !dayHasNoData
+                        ? dashboardData.mtd.totalInvoices
+                        : 0
+                  }
+                />
+              )}
+              <StatCard
+                title="Costs"
+                value={
+                  mtdSales
+                    ? mtdSales.totalCosts
+                    : activeDay === 'today' && !dayHasNoData
+                      ? dashboardData.mtd.totalCosts
+                      : 0
+                }
+              />
+              {false && (
+                <StatCard
+                  title="Expenses"
+                  value={
+                    mtdSales
+                      ? mtdSales.totalExpenses
+                      : activeDay === 'today' && !dayHasNoData
+                        ? dashboardData.mtd.totalExpenses
+                        : 0
+                  }
+                />
+              )}
+            </div>
           </div>
-        </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4">Year-to-Date (YTD)</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <StatCard title="Total Current Cash" value={ytdTotalCurrentCash} />
-            <StatCard
-              title="Invoices"
-              value={
-                ytdSales
-                  ? ytdSales.totalInvoices
-                  : activeDay === 'today' && !dayHasNoData
-                    ? dashboardData.ytd.totalInvoices
-                    : 0
-              }
-            />
-            {/* <StatCard title="Costs" value={dashboardData.ytd.totalCosts} /> */}
-            <StatCard
-              title="Expenses"
-              value={
-                ytdSales
-                  ? ytdSales.totalExpenses
-                  : activeDay === 'today' && !dayHasNoData
-                    ? dashboardData.ytd.totalExpenses
-                    : 0
-              }
-            />
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-semibold mb-4">Year-to-Date (YTD)</h2>
+            <div className="grid grid-cols-2 gap-4">
+              <StatCard title="Total Current Cash" value={ytdTotalCurrentCash} />
+              {false && (
+                <StatCard
+                  title="Invoices"
+                  value={
+                    ytdSales
+                      ? ytdSales.totalInvoices
+                      : activeDay === 'today' && !dayHasNoData
+                        ? dashboardData.ytd.totalInvoices
+                        : 0
+                  }
+                />
+              )}
+              {/* <StatCard title="Costs" value={dashboardData.ytd.totalCosts} /> */}
+              {false && (
+                <StatCard
+                  title="Expenses"
+                  value={
+                    ytdSales
+                      ? ytdSales.totalExpenses
+                      : activeDay === 'today' && !dayHasNoData
+                        ? dashboardData.ytd.totalExpenses
+                        : 0
+                  }
+                />
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
