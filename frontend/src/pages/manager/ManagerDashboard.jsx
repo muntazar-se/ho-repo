@@ -16,6 +16,7 @@ export default function ManagerDashboard() {
   const [todayByProduct, setTodayByProduct] = useState(null);
   const [activeDay, setActiveDay] = useState('today');
   const [dayHasNoData, setDayHasNoData] = useState(false);
+  const [dayLoading, setDayLoading] = useState(false);
 
   useEffect(() => {
     fetchDashboardData();
@@ -43,6 +44,7 @@ export default function ManagerDashboard() {
 
   const fetchSelectedDaySales = async () => {
     try {
+      setDayLoading(true);
       setDayHasNoData(false);
 
       const base = new Date();
@@ -161,6 +163,8 @@ export default function ManagerDashboard() {
       setPlByMonth([]);
       setTodayByProduct(null);
       setDayHasNoData(false);
+    } finally {
+      setDayLoading(false);
     }
   };
 
@@ -250,6 +254,7 @@ export default function ManagerDashboard() {
         <button
           type="button"
           onClick={() => setActiveDay('yesterday')}
+          disabled={dayLoading}
           className={
             activeDay === 'yesterday'
               ? 'px-4 py-2 rounded-md bg-blue-600 text-white'
@@ -261,6 +266,7 @@ export default function ManagerDashboard() {
         <button
           type="button"
           onClick={() => setActiveDay('today')}
+          disabled={dayLoading}
           className={
             activeDay === 'today'
               ? 'px-4 py-2 rounded-md bg-blue-600 text-white'
@@ -278,79 +284,88 @@ export default function ManagerDashboard() {
             {activeDay === 'yesterday' ? "Yesterday's Sales" : "Today's Sales"}
           </h2>
 
-          {dayHasNoData ? (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
-                {false && (
-                  <StatCard
-                    title="Total Current Cash"
-                    value={totalCurrentCash}
-                    icon={() => <span>💰</span>}
-                  />
-                )}
-              </div>
-              <div className="text-center text-gray-500">
-                {activeDay === 'yesterday'
-                  ? "Yesterday's data not provided yet"
-                  : "Today's data not provided yet"}
-              </div>
+          {dayLoading ? (
+            <div className="flex items-center justify-center min-h-48">
+              <LoadingSpinner size="lg" />
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {false && (
-                <StatCard
-                  title="Total Current Cash"
-                  value={totalCurrentCash}
-                  icon={() => <span>💰</span>}
-                />
-              )}
-              {false && (
-                <>
-                  <StatCard
-                    title="Invoices"
-                    value={todaySales ? todaySales.totalInvoices : 0}
-                    icon={() => <span>📄</span>}
-                  />
-                  <StatCard
-                    title="Expenses"
-                    value={currentDayExpenses}
-                    icon={() => <span>📊</span>}
-                  />
-                </>
-              )}
-            </div>
-          )}
 
-          {todayByProduct && (
-            <div className="mt-6">
-              <h3 className="text-lg font-semibold mb-3">By Product</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                {Object.entries(todayByProduct).map(([product, vals]) => (
-                  <StatCard
-                    key={product}
-                    title={product.replace(/([A-Z])/g, ' $1')}
-                    value={Number(vals?.cashRevenue) || 0}
-                    subtitle={`Invoices: ${Number(vals?.invoices) || 0}`}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
+            <>
+              {dayHasNoData ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+                    {false && (
+                      <StatCard
+                        title="Total Current Cash"
+                        value={totalCurrentCash}
+                        icon={() => <span>💰</span>}
+                      />
+                    )}
+                  </div>
+                  <div className="text-center text-gray-500">
+                    {activeDay === 'yesterday'
+                      ? "Yesterday's data not provided yet"
+                      : "Today's data not provided yet"}
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {false && (
+                    <StatCard
+                      title="Total Current Cash"
+                      value={totalCurrentCash}
+                      icon={() => <span>💰</span>}
+                    />
+                  )}
+                  {false && (
+                    <>
+                      <StatCard
+                        title="Invoices"
+                        value={todaySales ? todaySales.totalInvoices : 0}
+                        icon={() => <span>📄</span>}
+                      />
+                      <StatCard
+                        title="Expenses"
+                        value={currentDayExpenses}
+                        icon={() => <span>📊</span>}
+                      />
+                    </>
+                  )}
+                </div>
+              )}
 
-          <div className="mt-6 pt-4 border-t">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="hidden md:block" />
-              <div className="hidden md:block" />
-              <div className="hidden md:block" />
-              <div className="md:col-start-4">
-                <StatCard
-                  title="Total Current Cash"
-                  value={totalCurrentCash}
-                  icon={() => <span>💰</span>}
-                />
+              {todayByProduct && (
+                <div className="mt-6">
+                  <h3 className="text-lg font-semibold mb-3">By Product</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                    {Object.entries(todayByProduct).map(([product, vals]) => (
+                      <StatCard
+                        key={product}
+                        title={product.replace(/([A-Z])/g, ' $1')}
+                        value={Number(vals?.cashRevenue) || 0}
+                        subtitle={`Invoices: ${Number(vals?.invoices) || 0}`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-6 pt-4 border-t">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="hidden md:block" />
+                  <div className="hidden md:block" />
+                  <div className="hidden md:block" />
+                  <div className="md:col-start-4">
+                    <StatCard
+                      title="Total Current Cash"
+                      value={totalCurrentCash}
+                      icon={() => <span>💰</span>}
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
+            </>
+          )}
 
           {false && (
             <div className="mt-6 pt-4 border-t">
