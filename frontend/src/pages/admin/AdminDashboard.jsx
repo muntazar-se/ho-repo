@@ -44,15 +44,11 @@ export default function AdminDashboard() {
       <h1 className="text-3xl font-bold">Admin Dashboard</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <StatCard title="Total Users" value={users.length} icon={() => <span>👥</span>} />
-        <StatCard title="Active Users" value={activeUsers} icon={() => <span>✓</span>} />
-        <StatCard title="Admins" value={adminCount} icon={() => <span>👑</span>} />
-        <StatCard title="Managers" value={managerCount} icon={() => <span>📊</span>} />
-        <StatCard
-          title="Data Entry"
-          value={dataEntryCount}
-          icon={() => <span>📝</span>}
-        />
+<StatCard title="Total Users" value={users.length} format={(v) => v} icon={() => <span>👥</span>} />
+<StatCard title="Active Users" value={activeUsers} format={(v) => v} icon={() => <span>✓</span>} />
+<StatCard title="Admins" value={adminCount} format={(v) => v} icon={() => <span>👑</span>} />
+<StatCard title="Managers" value={managerCount} format={(v) => v} icon={() => <span>📊</span>} />
+<StatCard title="Data Entry" value={dataEntryCount} format={(v) => v} icon={() => <span>📝</span>} />
       </div>
 
       <div className="bg-white rounded-lg shadow-md p-6">
