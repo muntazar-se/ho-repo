@@ -10,6 +10,17 @@ export default function TodaysEntries() {
   const [entries, setEntries] = useState([]);
   const navigate = useNavigate();
 
+  const totalInvoices = entries.reduce((sum, e) => sum + (e.totalInvoices || 0), 0);
+  const totalSales = entries.reduce((sum, e) => sum + (e.totalCashRevenue || 0), 0);
+  const totalCash = entries.reduce(
+    (sum, e) =>
+      sum +
+      (e.totalCashRevenue || 0) -
+      (e.totalDirectCosts || 0) -
+      (e.totalExpenses || 0),
+    0
+  );
+
   useEffect(() => {
     fetchTodaysEntries();
   }, []);
@@ -64,6 +75,21 @@ export default function TodaysEntries() {
         >
           New Entry
         </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h3 className="text-lg font-semibold text-gray-500">Invoices</h3>
+          <p className="text-2xl font-bold">{formatCurrency(totalInvoices)}</p>
+        </div>
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h3 className="text-lg font-semibold text-gray-500">Today's Total Sales</h3>
+          <p className="text-2xl font-bold">{formatCurrency(totalSales)}</p>
+        </div>
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h3 className="text-lg font-semibold text-gray-500">Today's Total Cash</h3>
+          <p className="text-2xl font-bold">{formatCurrency(totalCash)}</p>
+        </div>
       </div>
 
       {entries.length === 0 ? (

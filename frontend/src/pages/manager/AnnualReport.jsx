@@ -75,7 +75,7 @@ export default function AnnualReport() {
             </div>
             <div className="bg-white rounded-lg shadow-md p-6">
               <h3 className="text-lg font-semibold text-gray-500">Total Invoices</h3>
-              <p className="text-2xl font-bold">{reportData.totalInvoices}</p>
+              <p className="text-2xl font-bold">{formatCurrency(reportData.totalInvoices)}</p>
             </div>
             <div className="bg-white rounded-lg shadow-md p-6">
               <h3 className="text-lg font-semibold text-gray-500">Total Costs</h3>
@@ -117,13 +117,13 @@ export default function AnnualReport() {
                   {reportData.monthlyBreakdown?.map((monthData, index) => (
                     <tr key={index} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {new Date(2000, index, 1).toLocaleString('default', { month: 'long' })}
+                        {new Date(2000, index, 1).toLocaleString('en-US', { month: 'long' })}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {formatCurrency(monthData.revenue || 0)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {monthData.invoices || 0}
+                        {formatCurrency(monthData.invoices || 0)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {formatCurrency(monthData.costs || 0)}
@@ -166,7 +166,7 @@ export default function AnnualReport() {
                         {product}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {data.invoices || 0}
+                        {formatCurrency(data.invoices || 0)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {formatCurrency(data.revenue || 0)}

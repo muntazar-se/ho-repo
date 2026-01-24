@@ -20,16 +20,20 @@ export default function PrivateRoute({ children, allowedRoles = [] }) {
 
   if (allowedRoles.length > 0) {
     const userRole = user.role;
-    const hasAccess = allowedRoles.includes(userRole);
+    const normalizedUserRole = typeof userRole === 'string' ? userRole.toLowerCase() : userRole;
+    const normalizedAllowedRoles = allowedRoles.map((r) => (typeof r === 'string' ? r.toLowerCase() : r));
+    const hasAccess = normalizedAllowedRoles.includes(normalizedUserRole);
     console.log('PrivateRoute: Checking access', { 
       userRole, 
+      normalizedUserRole,
       allowedRoles, 
+      normalizedAllowedRoles,
       hasAccess,
       roleMatch: {
-        exact: allowedRoles.includes(userRole),
-        admin: allowedRoles.includes('admin') && userRole === 'admin',
-        manager: allowedRoles.includes('manager') && userRole === 'manager',
-        dataEntry: allowedRoles.includes('dataEntry') && userRole === 'dataEntry'
+        exact: normalizedAllowedRoles.includes(normalizedUserRole),
+        admin: normalizedAllowedRoles.includes('admin') && normalizedUserRole === 'admin',
+        manager: normalizedAllowedRoles.includes('manager') && normalizedUserRole === 'manager',
+        dataEntry: normalizedAllowedRoles.includes('dataentry') && normalizedUserRole === 'dataentry'
       }
     });
     

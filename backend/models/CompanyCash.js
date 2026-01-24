@@ -8,6 +8,7 @@ const companyCashSchema = new mongoose.Schema(
       pellets: { type: Number, default: 0 },
       thalgy: { type: Number, default: 0 },
     },
+    otherIncome: { type: Number, default: 0 },
     totalCompanyCash: { type: Number, default: 0 },
     overallDebit: { type: Number, default: 0 },
     overallRiskFactor: { type: Number, default: 0 },
@@ -24,7 +25,8 @@ companyCashSchema.pre('save', function (next) {
     this.cashByProduct.chips +
     this.cashByProduct.flavors +
     this.cashByProduct.pellets +
-    this.cashByProduct.thalgy;
+    this.cashByProduct.thalgy +
+    (Number(this.otherIncome) || 0);
   this.lastUpdated = new Date();
   next();
 });

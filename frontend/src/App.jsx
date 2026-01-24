@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext.jsx';
 import PrivateRoute from './components/common/PrivateRoute.jsx';
@@ -6,6 +6,8 @@ import Navbar from './components/common/Navbar.jsx';
 import Sidebar from './components/common/Sidebar.jsx';
 import { USER_ROLES } from './utils/constants.js';
 import UserManagement from './pages/admin/UserManagement.jsx';
+import { ConfigProvider } from 'antd';
+import enUS from 'antd/locale/en_US';
 
 
 // Auth pages
@@ -26,10 +28,18 @@ import AdminDashboard from './pages/admin/AdminDashboard.jsx';
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <Toaster position="top-right" />
-        <Routes>
-          <Route path="/login" element={<Login />} />
+      <ConfigProvider locale={enUS}>
+        <Router>
+          <Toaster
+            position="top-center"
+            containerStyle={{
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+            }}
+          />
+          <Routes>
+            <Route path="/login" element={<Login />} />
           
           {/* Data Entry Routes */}
           <Route
@@ -48,6 +58,16 @@ function App() {
               <PrivateRoute allowedRoles={[USER_ROLES.DATA_ENTRY, USER_ROLES.ADMIN]}>
                 <Layout>
                   <TodaysEntries />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/data-entry/daily-sales-history"
+            element={
+              <PrivateRoute allowedRoles={[USER_ROLES.DATA_ENTRY, USER_ROLES.ADMIN]}>
+                <Layout>
+                  <DailySales />
                 </Layout>
               </PrivateRoute>
             }
@@ -107,20 +127,29 @@ function App() {
               </PrivateRoute>
             }
           />
-          <Route path="/" element={<Navigate to="/login" replace />} />
-        </Routes>
-      </Router>
+            <Route path="/" element={<Navigate to="/login" replace />} />
+          </Routes>
+        </Router>
+      </ConfigProvider>
     </AuthProvider>
   );
 }
 
 function Layout({ children }) {
+  const location = useLocation();
+  const isDataEntryRoute = location.pathname.startsWith('/data-entry');
+
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
       <div className="flex-1 flex flex-col">
         <Navbar />
-        <main className="flex-1 p-6">{children}</main>
+        <main
+          key={isDataEntryRoute ? location.pathname : undefined}
+          className={`flex-1 p-6 ${isDataEntryRoute ? 'page-transition' : ''}`}
+        >
+          {children}
+        </main>
       </div>
     </div>
   );

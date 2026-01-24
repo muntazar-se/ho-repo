@@ -116,27 +116,47 @@ const updateCompanyCash = async (dailySales) => {
     companyCash = await CompanyCash.create({});
   }
 
-  // Calculate revenue for products with payments
-  const chipsRevenue =
-    dailySales.products.chips.invoices + dailySales.products.chips.cashRevenue;
-  const flavorsRevenue =
-    dailySales.products.flavors.invoices + dailySales.products.flavors.cashRevenue;
-  const pelletsRevenue =
-    dailySales.products.pellets.invoices + dailySales.products.pellets.cashRevenue;
+  const allRows = await DailySales.find({}).select(
+    'products totalDirectCosts totalCashRevenue totalExpenses paymentsReceived miscIncome'
+  );
 
-  // Update cash by product
-  companyCash.cashByProduct.chips +=
-    chipsRevenue - dailySales.totalDirectCosts / 3 + dailySales.paymentsReceived.chips;
-  companyCash.cashByProduct.flavors +=
-    flavorsRevenue - dailySales.totalDirectCosts / 3 + dailySales.paymentsReceived.flavors;
-  companyCash.cashByProduct.pellets +=
-    pelletsRevenue - dailySales.totalDirectCosts / 3 + dailySales.paymentsReceived.pellets;
+  const nextCashByProduct = { chips: 0, flavors: 0, pellets: 0, thalgy: 0 };
+  let nextOverallDebit = 0;
+  let nextOtherIncome = 0;
 
-  // Calculate overall debit
-  const overallDebit =
-    dailySales.totalCashRevenue - dailySales.totalDirectCosts - dailySales.totalExpenses;
+  (allRows || []).forEach((row) => {
+    const chipsInvoices = Number(row?.products?.chips?.invoices) || 0;
+    const chipsCashRevenue = Number(row?.products?.chips?.cashRevenue) || 0;
+    const flavorsInvoices = Number(row?.products?.flavors?.invoices) || 0;
+    const flavorsCashRevenue = Number(row?.products?.flavors?.cashRevenue) || 0;
+    const pelletsInvoices = Number(row?.products?.pellets?.invoices) || 0;
+    const pelletsCashRevenue = Number(row?.products?.pellets?.cashRevenue) || 0;
 
-  companyCash.overallDebit += overallDebit;
+    const chipsRevenue = chipsInvoices + chipsCashRevenue;
+    const flavorsRevenue = flavorsInvoices + flavorsCashRevenue;
+    const pelletsRevenue = pelletsInvoices + pelletsCashRevenue;
+
+    const totalDirectCosts = Number(row?.totalDirectCosts) || 0;
+    const paymentsChips = Number(row?.paymentsReceived?.chips) || 0;
+    const paymentsFlavors = Number(row?.paymentsReceived?.flavors) || 0;
+    const paymentsPellets = Number(row?.paymentsReceived?.pellets) || 0;
+
+    nextCashByProduct.chips += chipsRevenue - totalDirectCosts / 3 + paymentsChips;
+    nextCashByProduct.flavors += flavorsRevenue - totalDirectCosts / 3 + paymentsFlavors;
+    nextCashByProduct.pellets += pelletsRevenue - totalDirectCosts / 3 + paymentsPellets;
+
+    nextOverallDebit +=
+      (Number(row?.totalCashRevenue) || 0) -
+      (Number(row?.totalDirectCosts) || 0) -
+      (Number(row?.totalExpenses) || 0) +
+      (Number(row?.miscIncome) || 0);
+
+    nextOtherIncome += Number(row?.miscIncome) || 0;
+  });
+
+  companyCash.cashByProduct = nextCashByProduct;
+  companyCash.overallDebit = nextOverallDebit;
+  companyCash.otherIncome = nextOtherIncome;
 
   await companyCash.save();
 };
@@ -214,7 +234,7 @@ export const createDailySales = async (req, res) => {
 // @access  Private
 export const getDailySales = async (req, res) => {
   try {
-    const { startDate, endDate, page = 1, limit = 20 } = req.query;
+    const { startDate, endDate, page = 1, limit = 20, includeAll } = req.query;
 
     const query = {};
 
@@ -228,8 +248,9 @@ export const getDailySales = async (req, res) => {
       }
     }
 
-    // If dataEntry, only show today's entries
-    if (req.user.role === USER_ROLES.DATA_ENTRY) {
+    // If dataEntry, only show today's entries unless explicitly requesting full history
+    const wantsAll = String(includeAll).toLowerCase() === 'true';
+    if (req.user.role === USER_ROLES.DATA_ENTRY && !wantsAll) {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const tomorrow = new Date(today);

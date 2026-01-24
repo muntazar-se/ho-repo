@@ -26,9 +26,11 @@ export const validateLogin = [
 export const validateDailySales = [
   body('date').isISO8601().withMessage('Valid date is required'),
   body('products').isObject().withMessage('Products data is required'),
-  body('directCosts').isObject().withMessage('Direct costs data is required'),
-  body('paymentsReceived').isObject().withMessage('Payments received data is required'),
-  body('expenses').isObject().withMessage('Expenses data is required'),
+  body('directCosts').optional().isObject().withMessage('Direct costs must be an object'),
+  body('paymentsReceived').optional().isObject().withMessage('Payments received must be an object'),
+  body('expenses').optional().isObject().withMessage('Expenses must be an object'),
+  body('miscIncome').optional().isNumeric().withMessage('Miscellaneous income must be a number'),
+  body('miscIncomeNote').optional().isString().withMessage('Miscellaneous income note must be a string'),
 ];
 
 export const validateChangePassword = [

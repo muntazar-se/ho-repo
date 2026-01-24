@@ -96,7 +96,7 @@ export default function MonthlyReport() {
             </div>
             <div className="bg-white rounded-lg shadow-md p-6">
               <h3 className="text-lg font-semibold text-gray-500">Total Invoices</h3>
-              <p className="text-2xl font-bold">{reportData.totalInvoices}</p>
+              <p className="text-2xl font-bold">{formatCurrency(reportData.totalInvoices)}</p>
             </div>
             <div className="bg-white rounded-lg shadow-md p-6">
               <h3 className="text-lg font-semibold text-gray-500">Total Costs</h3>
@@ -141,7 +141,7 @@ export default function MonthlyReport() {
                         {product}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {data.invoices || 0}
+                        {formatCurrency(data.invoices || 0)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {formatCurrency(data.revenue || 0)}
@@ -181,13 +181,13 @@ export default function MonthlyReport() {
                   {reportData.dailyBreakdown?.map((day) => (
                     <tr key={day.date} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {new Date(day.date).toLocaleDateString()}
+                        {new Date(day.date).toLocaleDateString('en-US')}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {formatCurrency(day.revenue || 0)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {day.invoices || 0}
+                        {formatCurrency(day.invoices || 0)}
                       </td>
                     </tr>
                   ))}

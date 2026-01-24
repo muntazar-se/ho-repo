@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
+import logo from '../../logo.png';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -29,8 +30,15 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <Link to={getDashboardPath()} className="text-xl font-bold">
-              Sales Management
+            <Link to={getDashboardPath()} className="flex items-center gap-3">
+              <span className="bg-white/95 rounded-md p-1 ring-1 ring-white/30 shadow-sm">
+                <img
+                  src={logo}
+                  alt="Company logo"
+                  className="h-9 w-auto object-contain"
+                />
+              </span>
+              <span className="text-xl font-bold">Sales Management</span>
             </Link>
           </div>
           {user && (

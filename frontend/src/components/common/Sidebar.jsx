@@ -33,6 +33,7 @@ export default function Sidebar() {
   const dataEntryLinks = [
     { path: '/data-entry/new', label: 'New Entry', icon: '➕' },
     { path: '/data-entry/history', label: "Today's Entries", icon: '📋' },
+    { path: '/data-entry/daily-sales-history', label: 'Daily Sales History', icon: '📅' },
   ];
 
   const links =

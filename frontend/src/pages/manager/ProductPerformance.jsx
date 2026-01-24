@@ -63,6 +63,7 @@ export default function ProductPerformance() {
       title: 'Invoices',
       dataIndex: 'invoices',
       key: 'invoices',
+      render: (value) => formatCurrency(value || 0),
       sorter: (a, b) => a.invoices - b.invoices,
     },
     {

@@ -11,6 +11,13 @@ export const dailySalesService = {
     return response.data;
   },
 
+  getAllHistory: async (params = {}) => {
+    const response = await api.get('/daily-sales-history', {
+      params: { ...params, includeAll: true },
+    });
+    return response.data;
+  },
+
   getById: async (id) => {
     const response = await api.get(`/daily-sales-history/${id}`);
     return response.data;

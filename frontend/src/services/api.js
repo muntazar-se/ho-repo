@@ -27,9 +27,14 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+      const url = error?.config?.url || '';
+      // Only force logout/redirect when identity check fails.
+      // Other endpoints might return 401/403 due to permission/config issues; callers should handle.
+      if (url.includes('/auth/me')) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

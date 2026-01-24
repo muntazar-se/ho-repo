@@ -6,7 +6,7 @@ export default function CurrencyInput({ value, onChange, placeholder, ...props }
     onChange?.(raw);
   };
 
-  const displayValue = value ? `$${Number(value).toLocaleString()}` : '';
+  const displayValue = value ? `$${Number(value).toLocaleString('en-US')}` : '';
 
   return (
     <Input

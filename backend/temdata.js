@@ -215,6 +215,22 @@ export const mockDailySales = [
       proteinBars: 13234.6
     }
   }
+  ,
+  {
+    date: '2026-01-22',
+    year: 2026,
+    month: 1,
+    numberOfInvoices: 21,
+    
+    totalSales: 33333333333333333339900,
+    products: {
+      chips: 200.0,
+      flavors: 9100.0,
+      pellets: 3900.0,
+      proteinChips: 12800.0,
+      proteinBars: 13234.6
+    }
+  }
   // ,
   // {
   //   date: '2026-01-14',

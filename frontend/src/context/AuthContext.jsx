@@ -37,12 +37,30 @@ export const AuthProvider = ({ children }) => {
         authService
           .getMe()
           .then((userData) => {
-            setUser(userData);
-            localStorage.setItem('user', JSON.stringify(userData));
+            setUser((prev) => {
+              const next = {
+                ...(prev || {}),
+                ...(userData || {}),
+              };
+              // Preserve role if API response doesn't include it
+              if (!next.role && prev?.role) {
+                next.role = prev.role;
+              }
+              // Preserve token if API response doesn't include it
+              if (!next.token && prev?.token) {
+                next.token = prev.token;
+              }
+              localStorage.setItem('user', JSON.stringify(next));
+              return next;
+            });
           })
-          .catch(() => {
-            // Token invalid, clear storage
-            logout();
+          .catch((err) => {
+            const status = err?.response?.status;
+            // Only logout when token is actually invalid/unauthorized.
+            // Avoid logging users out on transient/network/server errors.
+            if (status === 401 || status === 403) {
+              logout();
+            }
           });
       } catch (error) {
         logout();
